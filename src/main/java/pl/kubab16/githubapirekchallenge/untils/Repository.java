@@ -1,4 +1,4 @@
-package pl.kubab16.githubapirekchalange.untils;
+package pl.kubab16.githubapirekchallenge.untils;
 
 import java.util.ArrayList;
 import java.util.List;

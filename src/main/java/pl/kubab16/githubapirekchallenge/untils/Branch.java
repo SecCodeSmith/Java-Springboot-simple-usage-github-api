@@ -1,8 +1,8 @@
-package pl.kubab16.githubapirekchalange.untils;
+package pl.kubab16.githubapirekchallenge.untils;
 
 public class Branch {
-    private String name;
-    private String lastCommitSha;
+    private final String name;
+    private final String lastCommitSha;
 
     public Branch(String name, String lastCommitSha) {
         this.name = name;

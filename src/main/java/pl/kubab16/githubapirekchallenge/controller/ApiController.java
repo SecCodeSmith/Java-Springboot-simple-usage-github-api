@@ -1,4 +1,4 @@
-package pl.kubab16.githubapirekchalange.controller;
+package pl.kubab16.githubapirekchallenge.controller;
 
 import jakarta.annotation.Nullable;
 import org.json.JSONArray;
@@ -7,9 +7,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.HttpClientErrorException;
-import pl.kubab16.githubapirekchalange.untils.Branch;
-import pl.kubab16.githubapirekchalange.untils.ErrorResponse;
-import pl.kubab16.githubapirekchalange.untils.Repository;
+import pl.kubab16.githubapirekchallenge.untils.Branch;
+import pl.kubab16.githubapirekchallenge.untils.ErrorResponse;
+import pl.kubab16.githubapirekchallenge.untils.Repository;
 
 import java.io.IOException;
 import java.net.URI;
@@ -34,16 +34,12 @@ public class ApiController {
         }
 
 
-        HttpResponse<String> response = sendRequest(acceptHeader, token, url);
+        JSONArray json = sendRequest(acceptHeader, token, url);
 
         List<Repository> repositories = new ArrayList<>();
 
-        if (response.statusCode() == 404) {
-            throw new HttpClientErrorException(HttpStatus.NOT_FOUND, "User don't found.");
-        }
-        JSONArray json = new JSONArray(response.body());
 
-        for (Object object: json) {
+        for (Object object : json) {
             JSONObject obj = (JSONObject) object;
             if (obj.getBoolean("fork")) {
                 continue;
@@ -55,10 +51,9 @@ public class ApiController {
             String branch_url = GITHUB_API_URL + "/repos/" + username + "/" + repository.getName() + "/branches";
 
 
-            HttpResponse<String> response_branch = sendRequest(acceptHeader, token, branch_url);
-            JSONArray json_branch = new JSONArray(response_branch.body());
+            JSONArray json_branch = sendRequest(acceptHeader, token, branch_url);
 
-            for (Object object_b: json_branch) {
+            for (Object object_b : json_branch) {
                 JSONObject obj_b = (JSONObject) object_b;
                 Branch branch = new Branch(obj_b.getString("name"),
                         obj_b.getJSONObject("commit").getString("sha"));
@@ -69,15 +64,14 @@ public class ApiController {
         }
 
 
-        if (repositories == null || repositories.isEmpty()) {
+        if (repositories.isEmpty()) {
             throw new HttpClientErrorException(HttpStatus.NOT_FOUND, "User don't found.");
         }
-
 
         return repositories;
     }
 
-    private HttpResponse<String> sendRequest(String acceptHeader, String token, String url)
+    private JSONArray sendRequest(String acceptHeader, String token, String url)
             throws IOException, InterruptedException {
         HttpClient client = HttpClient.newHttpClient();
         HttpRequest.Builder requestBuilder = HttpRequest.newBuilder()
@@ -93,11 +87,15 @@ public class ApiController {
         HttpRequest request = requestBuilder.build();
         HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
 
-        return response;
+        if (response.statusCode() == 404) {
+            throw new HttpClientErrorException(HttpStatus.NOT_FOUND, "User don't found.");
+        }
+
+        return new JSONArray(response.body());
     }
 
     @GetMapping("/user/{username}")
-    public ResponseEntity<?>  getRepositoryList(
+    public ResponseEntity<?> getRepositoryList(
             @PathVariable String username,
             @RequestHeader("Accept") String acceptHeader,
             @RequestHeader("Token") @Nullable String token
@@ -109,7 +107,7 @@ public class ApiController {
             ErrorResponse errorResponse = new ErrorResponse(e.getStatusCode().value(),
                     e.getMessage());
             return ResponseEntity.status(e.getStatusCode()).body(errorResponse);
-        }catch (Exception e) {
+        } catch (Exception e) {
             ErrorResponse errorResponse = new ErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR.value(),
                     "An error occurred.");
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);

@@ -1,4 +1,4 @@
-package pl.kubab16.githubapirekchalange.untils;
+package pl.kubab16.githubapirekchallenge.untils;
 
 public class ErrorResponse {
     private int status;
@@ -13,7 +13,17 @@ public class ErrorResponse {
         return status;
     }
 
+    public void setStatus(int status) {
+        this.status = status;
+    }
+
     public String getMessage() {
         return message;
     }
+
+    public void setMessage(String message) {
+        this.message = message;
+    }
+
+
 }
